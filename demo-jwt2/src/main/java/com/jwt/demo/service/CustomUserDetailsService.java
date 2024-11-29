@@ -28,7 +28,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     @Transactional
-    public UserDetails loadUserByUsername(final String username) {
+    public UserDetails loadUserByUsername(final String username) 
+    {
     	log.info("+loadUserByname");
     	
     	UserDetails userDetails = userRepository.findOneWithAuthoritiesByUsername(username)
@@ -38,8 +39,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         return userDetails;
     }
 
-    private org.springframework.security.core.userdetails.User createUser(String username, User user) {
-        if (!user.isActivated()) {
+    private org.springframework.security.core.userdetails.User createUser(String username, User user) 
+    {
+        if (!user.isActivated()) 
+        {
             throw new RuntimeException(username + " -> 활성화되어 있지 않습니다.");
         }
         

@@ -9,6 +9,8 @@ public class BCryptPasswordEncoderExample {
         String result = encoder.encode("12345");
         
         System.out.println(result);
+        result = encoder.encode("54321");
+        System.out.println(result);
 
 	}
 

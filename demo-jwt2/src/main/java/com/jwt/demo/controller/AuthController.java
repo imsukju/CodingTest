@@ -1,5 +1,6 @@
 package com.jwt.demo.controller;
 
+import java.util.Date;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,8 +24,10 @@ import com.jwt.demo.entities.RefreshToken;
 import com.jwt.demo.jwt.JwtFilter;
 import com.jwt.demo.jwt.TokenProvider;
 import com.jwt.demo.repository.RefreshTokenRepository;
+import com.jwt.demo.repository.UserRepository;
 import com.jwt.demo.service.AuthenticationService;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -65,8 +69,9 @@ public class AuthController {
         try {
         	
         	Optional<TokenDto> tokenDto = 
-        			authenticationService.makeNewAccessToken(
+         			authenticationService.makeNewAccessToken(
         					refreshTokenRequest, authentication);
+        	
         	
         	if (!tokenDto.isEmpty()) {
         		return ResponseEntity.ok(tokenDto.get());
@@ -79,5 +84,27 @@ public class AuthController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }        
     }
+    
+    @PostMapping("/checkToken")
+    public ResponseEntity<Date> postMethodName(@RequestBody TokenDto Token) 
+    {
+    	return ResponseEntity.ok(authenticationService.checkToken(Token));
+    	
+    }
+    
+    @GetMapping("/logout")
+    public ResponseEntity<String> logOutMethod(@RequestBody String name) {
+  
+        return ResponseEntity.ok(authenticationService.LogoutService());
+        		
+    }
+    
+    @GetMapping("/blacklist")
+    public void blacklistMethod()
+    {
+    	
+    }
+    
+    
     
 }

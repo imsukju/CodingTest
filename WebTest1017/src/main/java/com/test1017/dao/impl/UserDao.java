@@ -46,4 +46,10 @@ public class UserDao {
     {
     	return null;
     }
+    
+    
+    public User findUserbyid(Long id)
+    {
+    	return em.find(User.class, id);
+    }
 }

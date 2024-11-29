@@ -17,6 +17,7 @@ public class JwtSecurityConfig extends
     public void configure(HttpSecurity http) {
     	
     	http.addFilterBefore(
+    			//JwtFilter를 UsernamePasswordAuthenticationFilter 뒤쪽에 배치를 한다.
                 new JwtFilter(tokenProvider),
                 UsernamePasswordAuthenticationFilter.class
         );

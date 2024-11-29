@@ -12,5 +12,5 @@ public interface Postdao {
 	void update(Post entity,String title, String text);
 	List<Post> searchPostsByName(String name, int page, int pageSize);
 	long countPostsByName(String name);
-public List<Post> findPostsByPage(int page, int pageSize);
+	public List<Post> findPostsByPage(int page, int pageSize);
 }

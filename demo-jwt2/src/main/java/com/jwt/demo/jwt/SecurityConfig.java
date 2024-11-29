@@ -31,12 +31,12 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-    
+    // AuthenticationProvider들을 관리하는 매니저 생성
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
-
+    //필터체인
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 

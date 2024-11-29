@@ -29,6 +29,6 @@ public class CommentDTO {
 
     private Long postid;
 	
-    private UserDTO user;
+    private User user;
 
 }

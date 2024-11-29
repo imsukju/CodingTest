@@ -22,6 +22,7 @@ public class DemoJwtApplication {
 			PasswordEncoder passwordEncoder
 			) {
 		
+		// 실행전에 미리 값을 추가하는 커맨드라인러너
 		return new CommandLineRunner() {
 		      @Override
 		      public void run(String... args) throws Exception {

@@ -20,8 +20,10 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import com.jwt.demo.dto.TokenDto;
 import com.jwt.demo.entities.RefreshToken;
 import com.jwt.demo.repository.RefreshTokenRepository;
+import com.jwt.demo.service.UserService;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -49,6 +51,12 @@ public class TokenProvider implements InitializingBean {
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
 
+
+    //Value 값은 application.yml 파일에서 받아옴
+   // header: Authorization
+   // secret: a2FyaW10b2thcmltdG9rYXJpbXRva2FyaW10b2thcmltdG9rYXJpbXRva2FyaW10b2thcmltdG9rYXJpbXRva2FyaW10b2thcmltdG9rYXJpbXRva2FyaW10b2thcmltdG9rYXJpbXRva2FyaW10b2thcmltdG9rYXJpbXRva2FyaW10b2thcmltdG9rYXJpbQ==
+   // token-validity-in-seconds: 200
+   // refreshtoken-validity-in-seconds: 1800
     public TokenProvider(
             @Value("${jwt.secret}") String secret,
             @Value("${jwt.token-validity-in-seconds}") long accessTokenValidityInSeconds,
@@ -66,7 +74,12 @@ public class TokenProvider implements InitializingBean {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
+    
     public String createToken(Authentication authentication, boolean isAccessToken) {
+    	//권한들을 받아온다음에 map으로 권한을 문자열을 받아옵니다 "," 를 기준으로 나눕니다
+    	
+    	// 해당 코드는 인증된 사용자의 권한 목록을 문자열로 변환하는 역할을 합니다.
+    	//각 권한(GrantedAuthority)에서 권한 이름을 가져온 후, 콤마(,)로 구분하여 하나의 문자열로 결합합니다.
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
@@ -83,19 +96,22 @@ public class TokenProvider implements InitializingBean {
         	date = now + this.refreshTokenValidityInMilliseconds;
         
         Date validity = new Date(date);
-
-        return Jwts.builder()
-                .setSubject(authentication.getName())
-                .claim(AUTHORITIES_KEY, authorities) // 정보 저장
+        
+        //jwt 토큰을 생성하는 코드
+        return Jwts.builder()//jwt 객체를 초기화
+                .setSubject(authentication.getName())//토큰의 주체(Subject)를 정함
+                .claim(AUTHORITIES_KEY, authorities) // 정보 저장( 클레임은 JWT의 payload 부분에 저장되는 정보로, 이 코드에서는 AUTHORITIES_KEY라는 키 값에 authorities라는 권한 정보를 저장합니다.)
                 .signWith(key, SignatureAlgorithm.HS512) // 사용할 암호화 알고리즘과 , signature 에 들어갈 secret값 세팅
                 .setExpiration(validity) // set Expire Time 해당 옵션 안넣으면 expire안함
                 .compact();
     }
     
+    // 토큰 생성및 db에저장해둠 만듬
     public String createAndPersistRefreshTokenForUser(Authentication authentication) {
     	String refreshToken = this.createToken(authentication, false);
         
         long now = (new Date()).getTime();
+        //리프래시 토큰의 유효기간?을 성정함
         Date validity = new Date(now + this.refreshTokenValidityInMilliseconds);
         Instant instant = validity.toInstant();
         
@@ -156,6 +172,17 @@ public class TokenProvider implements InitializingBean {
         return false;
     }
     
+    
+    public Claims  getTokenInfo(TokenDto token)
+    {
+    	//parser는 토큰을 파싱해서 컴퓨터가 이해할 수 있는 형태로 변환하는 역할
+    	// jwts.parser는 토큰을 컴퓨터가 이해할 수 있는 형태로 만든다음에 검증을 한다
+    	return Jwts.parserBuilder()
+    			.setSigningKey(key)
+    			.build()
+    			.parseClaimsJws(token.getToken())
+    			.getBody();
+    }
    
 }
 

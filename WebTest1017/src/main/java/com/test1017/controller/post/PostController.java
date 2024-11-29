@@ -15,11 +15,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.test1017.converter.CommentDTOconverter;
 import com.test1017.converter.PostDTOConverter;
 import com.test1017.dao.impl.UserDao;
+import com.test1017.dto.CommentDTO;
 import com.test1017.dto.PostDTO;
+import com.test1017.entity.Comment;
 import com.test1017.entity.Post;
 import com.test1017.entity.User;
+import com.test1017.service.CommentService;
 import com.test1017.service.EntityCallback;
 import com.test1017.service.PostService;
 
@@ -40,6 +44,14 @@ public class PostController
     @Autowired
     @Qualifier("postCallbackImpl")
     private EntityCallback<Post> postCallbackImpl;
+    
+	@Autowired
+	@Qualifier("commentService")
+	CommentService commentService;
+	
+	@Autowired
+	@Qualifier("commentServiceCallbcak")
+	private EntityCallback<Comment> commentServiceCallbcak;
 
 	
     @GetMapping("/posts")
@@ -143,7 +155,20 @@ public class PostController
     @GetMapping("/posts/{id}")
     public String getMethodName(@PathVariable("id") Long id,Model model) {
     	Post post = postService.findById(id, postCallbackImpl);
+    	if(commentService.findByPostid(post.getPostid()) != null)
+    	{
+    		List<Comment> coms = commentService.findByPostid(post.getPostid());
+    		List<CommentDTO> comments = CommentDTOconverter.toDtoList(coms);
+        	model.addAttribute("comments",comments);
+    	}
+     
+        List<User> users = userDao.getAlluser();
+        
+        
+        model.addAttribute("userList",users);
+     	model.addAttribute("comment", new CommentDTO());
     	model.addAttribute("post",post);
+
         return "post/detail";
     }
     
@@ -175,6 +200,27 @@ public class PostController
     	model.addAttribute("post",post);
     	return "redirect:/";
     }   
+    @PostMapping("/posts/{id}/comments")
+    public String addComment(@Valid @ModelAttribute("comment") CommentDTO comment,
+    		BindingResult result, @PathVariable("id") Long id, @RequestParam("user.userid")Long userid)
+    {
+        if (result.hasErrors()) {
+            return "post/new";
+        }
+        PostDTO podto = PostDTOConverter.toDto(postService.findById(id, postCallbackImpl));
+        		
+        User user = userDao.findUserbyid(userid);
+        Comment comment1 = CommentDTOconverter.toEntity(comment, podto,user);
+        comment1.setPost(postService.findById(id, postCallbackImpl));
+        comment1.setUser(user);
+        commentService.post(comment1, commentServiceCallbcak);
+
+        return "redirect: /posts/{id}";
+    }   
+    
+
+    
+    
     
     
 }
